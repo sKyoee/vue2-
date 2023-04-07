@@ -1,0 +1,17 @@
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: #ec4141 !important;
+    color: #fff !important;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled):hover {
+    background-color: #f12929 !important;
+    color: #fff !important;
+}
+
+.el-backtop {
+     color: #ec4141 !important;
+}
+
+.el-table::before{
+    content: none !important;
+}
