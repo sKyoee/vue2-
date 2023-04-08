@@ -1,6 +1,6 @@
 <template>
   <div id="scroll">
-    <div id="artist-wrapper" v-if="isShow">
+    <div id="artist-wrapper">
       <div id="artist-info">
         <!-- 图片 -->
         <div id="img-wrapper">
@@ -50,22 +50,24 @@
           <AlbumList v-for="item in hotAlbums" :id="item.id"></AlbumList>
         </div>
       </template>
-      <template v-if="component == 'MV'">
+      <template v-else-if="component == 'MV'">
         <MVList :id="this.id"></MVList>
       </template>
-      <template v-if="component == 'detail'">
+      <template v-else-if="component == 'detail'">
         <div id="artist-des" v-if="artistDes.length !== 0">
           <div class="text-wrapper" v-for="(i, index) in artistDes">
             <div class="title">{{ i.ti }}</div>
-            <p class="text" v-for="p in i.txt">{{p}}</p>
+            <p class="text" v-for="p in i.txt">{{ p }}</p>
           </div>
         </div>
-        <div id="no-description" v-else>
-          暂无介绍
-        </div>
+        <div id="no-description" v-else>暂无介绍</div>
       </template>
-      <template v-if="component == 'similar-singer'">
-        
+      <template v-else-if="component == 'similar-singer'">
+        <HomePageAlbums
+          :list="this.similarArtists"
+          type="artist"
+          v-loading="isLoading"
+        ></HomePageAlbums>
       </template>
     </div>
   </div>
@@ -76,21 +78,23 @@ import TabList from "../components/List/TabList.vue";
 import TopF from "../components/ArtistAlbum/TopFif.vue";
 import AlbumList from "../components/ArtistAlbum/AlbumList.vue";
 import MVList from "../components/List/MVList.vue";
-import HomePageAlbums from '../components/HomePageAlbums/HomePageAlbums.vue';
+import HomePageAlbums from "../components/HomePageAlbums/HomePageAlbums.vue";
 import { get } from "../request/index";
+import { mapState } from "vuex";
 
 export default {
-  components: { TabList, TopF, AlbumList, MVList,HomePageAlbums },
+  components: { TabList, TopF, AlbumList, MVList, HomePageAlbums },
   data() {
     return {
       artistDetail: {},
       artistDes: [],
       homepage: false,
       userInfo: {},
-      component: "similar-singer",
+      component: "album",
       isShow: true,
       top50: [],
       hotAlbums: [],
+      similarArtists: [],
       isLoading: false,
     };
   },
@@ -98,12 +102,38 @@ export default {
     id() {
       return this.$route.params.id;
     },
+    ...mapState(["isLogin"]),
   },
-  watch:{
+  watch: {
     artistDes() {
-      this.artistDes.forEach((item)=>{
-        item.txt = item.txt.split('\n')
-      })
+      this.artistDes.forEach((item) => {
+        item.txt = item.txt.split("\n");
+      });
+    },
+    component: {
+      immediate: true,
+      handler() {
+        if (this.component == "similar-singer") {
+          if (!this.isLogin) {
+            this.$message.error("需要登录");
+          }
+        }
+      },
+    },
+    // 在相似歌手跳转歌手详情页由于路由器没有检测到路由的跳转，不会引起created钩子调用，数据无法更新，在这里监视路径传递的id数，以此调用各种api来触发页面数据更新
+    id() {
+      console.log(this.id);
+      this.getArtistDetail(this.id);
+      this.getSimilarArtist(this.id);
+      // 清空之前存储的数据，避免出现页面数据依旧是路由跳转之前的歌手的数据
+      this.artistDes = [];
+      this.userInfo = {};
+      this.top50 = [];
+      this.hotAlbums = [];
+      this.getArtistDes(this.id);
+      this.getArtistTopSong(this.id);
+      this.getArtistAlbum(this.id);
+      
     },
   },
   filters: {
@@ -175,12 +205,22 @@ export default {
         this.getArtistAlbum(this.id, offset);
       }
     },
+    // 相似歌手
+    async getSimilarArtist(id) {
+      this.isLoading = true
+      const res = await get("/simi/artist", { id });
+      // if(res.code !== 200) return
+      console.log("similar", res);
+      this.similarArtists = Object.freeze(res.artists);
+      this.isLoading = false
+    },
   },
   created() {
     this.getArtistDetail(this.id);
     this.getArtistDes(this.id);
     this.getArtistTopSong(this.id);
     this.getArtistAlbum(this.id);
+    this.getSimilarArtist(this.id);
   },
 };
 </script>
@@ -263,8 +303,10 @@ export default {
         }
       }
     }
-    #no-description{
+    #no-description {
+      margin-top: 20px;
       height: 100px;
+      color: #676767;
       line-height: 100px;
       text-align: center;
     }

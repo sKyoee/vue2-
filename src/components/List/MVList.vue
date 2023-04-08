@@ -1,16 +1,24 @@
 <template>
-  <div id="mv-wrapper">
-    <div class="flex" v-for="(m, index) in mvList" :key="index">
-      <div id="img-wrapper">
-        <div id="play-count">
-          <i class="iconfont icon-24gl-play"></i>
-          <span> {{ m.playCount | playCountFormat }}</span>
+  <div v-loading="isLoading">
+    <div id="mv-wrapper" >
+      <div
+        class="flex"
+        v-for="(m, index) in mvList"
+        :key="index"
+        v-if="!mvList.length == 0"
+      >
+        <div id="img-wrapper">
+          <div id="play-count">
+            <i class="iconfont icon-24gl-play"></i>
+            <span> {{ m.playCount | playCountFormat }}</span>
+          </div>
+          <img :src="m.imgurl + '?param=250y140'" />
+          <div id="duration">{{ m.duration | dtFormat }}</div>
         </div>
-        <img :src="m.imgurl + '?param=250y140'" />
-        <div id="duration">{{ m.duration | dtFormat }}</div>
+        <span id="name">{{ m.name }}</span>
       </div>
-      <span id="name">{{ m.name }}</span>
     </div>
+    <div class="no-mv" v-if="mvList.length == 0">没有相关mv</div>
   </div>
 </template>
 
@@ -20,6 +28,7 @@ export default {
   data() {
     return {
       mvList: [],
+      isLoading: false,
     };
   },
   props: {
@@ -30,10 +39,12 @@ export default {
   },
   methods: {
     async getArtistMv(id) {
+      this.isLoading = true;
       const res = await get("/artist/mv", { id });
       if (res.code !== 200) return;
       console.log(res);
       this.mvList = Object.freeze(res.mvs);
+      this.isLoading = false;
     },
   },
   filters: {
@@ -46,17 +57,16 @@ export default {
     },
     dtFormat(val) {
       let date = new Date(val);
-      let min = date.getMinutes()
-      let sec = date.getSeconds()
-      min = min < 10 ? '0' + min :min
-      sec = sec < 10 ? '0' + sec :sec
-      if(val>86400000){
-        let hour = date.getHours()
-        return `${hour}:${min}:${sec}`
+      let min = date.getMinutes();
+      let sec = date.getSeconds();
+      min = min < 10 ? "0" + min : min;
+      sec = sec < 10 ? "0" + sec : sec;
+      if (val > 86400000) {
+        let hour = date.getHours();
+        return `${hour}:${min}:${sec}`;
       } else {
-        return `${min}:${sec}`
+        return `${min}:${sec}`;
       }
-      
     },
   },
   created() {
@@ -101,7 +111,7 @@ export default {
         border-radius: 5px;
         object-fit: cover;
       }
-      #duration{
+      #duration {
         position: absolute;
         right: 6px;
         bottom: 3px;
@@ -118,5 +128,11 @@ export default {
       }
     }
   }
+}
+.no-mv {
+  height: 100px;
+  text-align: center;
+  color: #676767;
+  line-height: 100px;
 }
 </style>
