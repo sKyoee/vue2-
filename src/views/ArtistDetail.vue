@@ -38,47 +38,79 @@
           </div>
         </div>
       </div>
-
       <TabList
         :tabList="['专辑', 'MV', '歌手详情', '相似歌手']"
         @tabClick="tabClick"
       />
-
-      <TopF :songs="top50">
-        <img src="../assets/img/top50.png">
-      </TopF>
-      
-      <div id="album-list" v-if="hotAlbums.length !== 0">
-        <AlbumList v-for="item in hotAlbums" :id="item.id"></AlbumList>
-      </div>
-      
+      <template v-if="component == 'album'">
+        <TopF :songs="top50">
+          <img src="../assets/img/top50.png" />
+        </TopF>
+        <div id="album-list" v-if="hotAlbums.length !== 0">
+          <AlbumList v-for="item in hotAlbums" :id="item.id"></AlbumList>
+        </div>
+      </template>
+      <template v-if="component == 'MV'">
+        <MVList :id="this.id"></MVList>
+      </template>
+      <template v-if="component == 'detail'">
+        <div id="artist-des" v-if="artistDes.length !== 0">
+          <div class="text-wrapper" v-for="(i, index) in artistDes">
+            <div class="title">{{ i.ti }}</div>
+            <p class="text" v-for="p in i.txt">{{p}}</p>
+          </div>
+        </div>
+        <div id="no-description" v-else>
+          暂无介绍
+        </div>
+      </template>
+      <template v-if="component == 'similar-singer'">
+        
+      </template>
     </div>
   </div>
 </template>
 
 <script>
 import TabList from "../components/List/TabList.vue";
-import TopF from '../components/ArtistAlbum/TopFif.vue';
-import AlbumList from '../components/ArtistAlbum/AlbumList.vue'
+import TopF from "../components/ArtistAlbum/TopFif.vue";
+import AlbumList from "../components/ArtistAlbum/AlbumList.vue";
+import MVList from "../components/List/MVList.vue";
+import HomePageAlbums from '../components/HomePageAlbums/HomePageAlbums.vue';
 import { get } from "../request/index";
+
 export default {
-  components: { TabList,TopF,AlbumList },
+  components: { TabList, TopF, AlbumList, MVList,HomePageAlbums },
   data() {
     return {
       artistDetail: {},
-      artistDes: {},
+      artistDes: [],
       homepage: false,
       userInfo: {},
-      component: "album",
+      component: "similar-singer",
       isShow: true,
-      top50:[],
-      hotAlbums:[],
-      isLoading:false
+      top50: [],
+      hotAlbums: [],
+      isLoading: false,
     };
   },
   computed: {
     id() {
       return this.$route.params.id;
+    },
+  },
+  watch:{
+    artistDes() {
+      this.artistDes.forEach((item)=>{
+        item.txt = item.txt.split('\n')
+      })
+    },
+  },
+  filters: {
+    txtFormat(val) {
+      let p = val.join("\n");
+      for (i in p) {
+      }
     },
   },
   methods: {
@@ -98,9 +130,9 @@ export default {
     // 歌手描述
     async getArtistDes(id) {
       const res = await get("/artist/desc", { id });
-      if(res.code !== 200) return
+      if (res.code !== 200) return;
       console.log("Desc", res);
-      this.artistDes = Object.freeze(res);
+      this.artistDes = Object.freeze(res.introduction);
     },
     // 跳转个人主页
     toUser(id) {
@@ -111,44 +143,44 @@ export default {
       switch (val) {
         case 0:
           this.component = "album";
-          break
+          break;
         case 1:
           this.component = "MV";
-          break
+          break;
         case 2:
           this.component = "detail";
-          break
+          break;
         case 3:
-          this.component = "similar-singer"
-          break
+          this.component = "similar-singer";
+          break;
         default:
-          console.log('未匹配')
+          console.log("未匹配");
       }
     },
     // 获取歌手热门50首歌曲
-    async getArtistTopSong(id){
-      const res = await get('/artist/top/song',{id})
-      if(res.code !== 200) return
-      console.log('top50',res)
-      this.top50 = Object.freeze(res.songs)
+    async getArtistTopSong(id) {
+      const res = await get("/artist/top/song", { id });
+      if (res.code !== 200) return;
+      console.log("top50", res);
+      this.top50 = Object.freeze(res.songs);
     },
     // 获取歌手专辑
-    async getArtistAlbum(id,offset=0,limit=100){
-      const res = await get('/artist/album',{id,limit,offset})
-      if(res.code !== 200) return
-      console.log('artistAlbum',res)
-      this.hotAlbums.push(...Object.freeze(res.hotAlbums))
-      if(res.more){
-        offset += 100
-        this.getArtistAlbum(this.id,offset)
+    async getArtistAlbum(id, offset = 0, limit = 100) {
+      const res = await get("/artist/album", { id, limit, offset });
+      if (res.code !== 200) return;
+      console.log("artistAlbum", res);
+      this.hotAlbums.push(...Object.freeze(res.hotAlbums));
+      if (res.more) {
+        offset += 100;
+        this.getArtistAlbum(this.id, offset);
       }
     },
   },
   created() {
     this.getArtistDetail(this.id);
     this.getArtistDes(this.id);
-    this.getArtistTopSong(this.id)
-    this.getArtistAlbum(this.id)
+    this.getArtistTopSong(this.id);
+    this.getArtistAlbum(this.id);
   },
 };
 </script>
@@ -216,7 +248,25 @@ export default {
       }
     }
 
-    #song-list{
+    #artist-des {
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 30px;
+      .text-wrapper {
+        margin-bottom: 20px;
+        .title {
+          font-weight: bold;
+        }
+        .text {
+          text-indent: 2em;
+          color: #676767;
+        }
+      }
+    }
+    #no-description{
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
     }
   }
 }

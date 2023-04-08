@@ -14,7 +14,7 @@
 export default {
   data() {
     return {
-      tabIndex: 0,
+      tabIndex: 1,
     };
   },
   props: {
