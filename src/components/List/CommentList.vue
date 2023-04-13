@@ -58,7 +58,9 @@
           <div id="avatar-img" @click="toUserDetail(c.user.userId)">
             <img :src="c.user.avatarUrl + '?param=100y100'" />
             <div id="identify" v-if="c.user.avatarDetail">
-              <img :src="c.user.avatarDetail.identityIconUrl + '?param=100y100'" />
+              <img
+                :src="c.user.avatarDetail.identityIconUrl + '?param=100y100'"
+              />
             </div>
           </div>
           <div id="comment-detail">
@@ -82,7 +84,8 @@
                 {{ c.time | timeFormat }}
               </div>
               <div id="icon" @click="giveLike">
-                <i class="iconfont icon-good"></i>
+                <i class="iconfont icon-good" style="margin-right: 5px"></i
+                >{{ c.likedCount }}
               </div>
             </div>
           </div>
@@ -110,7 +113,7 @@ export default {
   data() {
     return {
       queryCommentInfo: {
-        limit: 60,
+        limit: 40,
         offset: 0,
       },
       text: "",
@@ -121,7 +124,7 @@ export default {
   },
   props: {
     id: {
-      type: Number,
+      required: true,
     },
     isLogin: {
       type: Boolean,
@@ -142,26 +145,49 @@ export default {
         console.log("album", res);
         this.commentList = Object.freeze(res.comments);
         this.hotCommentList = Object.freeze(res.hotComments);
+      } else if (this.type == "mv") {
+        const res = await get("/comment/mv", {
+          id,
+          limit,
+          offset: offset * limit,
+        });
+        console.log("mvComment", res);
+        this.commentList = Object.freeze(res.comments);
+        if (res.hotComments) {
+          this.hotCommentList = Object.freeze(res.hotComments);
+        }
+        this.totalComment = res.total;
+      } else if(this.type == 'video') {
+        const res = await get('/comment/video',{
+          id,
+          limit,
+          offset: offset * limit,
+        })
+        console.log('videoComment',res)
+        this.commentList = Object.freeze(res.comments)
+        if (res.hotComments) {
+          this.hotCommentList = Object.freeze(res.hotComments);
+        }
       } else {
         const res = await axios.get("/comment/playlist", {
           params: { id, limit, offset: offset * limit },
         });
         if (res.data.code !== 200) return;
-        console.log(res.data);
+        console.log('comment',res.data);
         this.commentList = Object.freeze(res.data.comments);
         this.totalComment = res.data.total;
       }
     },
     // 获取热门评论
     async getHotComment(id, type) {
-      if (this.type == "album") {
+      if (this.type == "album" || this.type == "mv" || this.type == 'video') {
         return;
       }
       const res = await axios.get("/comment/hot", {
         params: { id, type, limit: 10 },
       });
       if (res.data.code !== 200) return;
-      console.log("AA", res.data);
+      console.log("hotComment", res.data);
       this.hotCommentList = Object.freeze(res.data.hotComments);
     },
     // 添加评论
@@ -257,6 +283,7 @@ export default {
       padding: 10px;
       border-radius: 5px;
       margin-bottom: 8px;
+      line-height: 20px;
       #userName {
         color: #507daf;
         cursor: pointer;
@@ -293,6 +320,7 @@ export default {
         width: 100%;
         #user-comment {
           margin-bottom: 8px;
+          line-height: 20px;
           #userName {
             color: #507daf;
             cursor: pointer;
@@ -325,11 +353,13 @@ export default {
     #comment-hot {
       font-size: 16px;
       margin: 10px 0;
+      cursor: default;
     }
 
     #comment-latest {
       font-size: 16px;
       margin: 10px 0;
+      cursor: default;
     }
 
     #paging {

@@ -50,6 +50,23 @@ const router = new VueRouter({
                     path: '/artistdetail/:id',
                     component: () => import(/* webpackChunckName:'artistDetail' */'../views/ArtistDetail.vue'),
                     meta:{title:'歌手'}
+                },
+                {
+                    path: '/mvdetail/:id',
+                    component: () => import(/* webpackChunckName:'mvDetail'*/'../views/MVDetail.vue'),
+                    props:true,
+                    meta:{title:'MV'}
+                },
+                {
+                    path: '/vedio',
+                    component: () => import(/* webpackChunckName:'video'*/'../views/Video.vue'),
+                    meta:{title:'视频'}
+                },
+                {
+                    path: '/videodetail/:id',
+                    component: () => import(/*webpackChunckName:'videodetail'*/'../views//VideoDetail.vue'),
+                    props:true,
+                    meta:{title:'视频'}
                 }
             ]
         },

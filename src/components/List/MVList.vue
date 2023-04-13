@@ -7,7 +7,7 @@
         :key="index"
         v-if="!mvList.length == 0"
       >
-        <div id="img-wrapper">
+        <div id="img-wrapper" @click="toMVDetail(m.id)">
           <div id="play-count">
             <i class="iconfont icon-24gl-play"></i>
             <span> {{ m.playCount | playCountFormat }}</span>
@@ -38,6 +38,7 @@ export default {
     },
   },
   methods: {
+    // 获取歌手mv
     async getArtistMv(id) {
       this.isLoading = true;
       const res = await get("/artist/mv", { id });
@@ -46,6 +47,10 @@ export default {
       this.mvList = Object.freeze(res.mvs);
       this.isLoading = false;
     },
+    // 跳转到mv路由
+    toMVDetail(id){
+      this.$router.push(`/mvdetail/${id}`)
+    }
   },
   filters: {
     playCountFormat(val) {
