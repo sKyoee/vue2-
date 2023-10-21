@@ -122,7 +122,7 @@
         用户没有收藏的歌单或已隐藏
       </div>
     </div>
-    <el-backtop target="#scroll"></el-backtop>
+    <el-backtop target="#scroll" :bottom="100"></el-backtop>
   </div>
 </template>
 

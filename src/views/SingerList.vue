@@ -280,6 +280,9 @@ export default {
       }
     }
   }
+  #artists-list{
+    padding-bottom: 80px;
+  }
 }
 
 

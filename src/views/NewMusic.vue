@@ -71,6 +71,7 @@ export default {
 
   #new-music-view {
     margin-top: 10px;
+    padding-bottom: 100px;
   }
 }
 </style>

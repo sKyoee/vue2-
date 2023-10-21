@@ -69,6 +69,7 @@ export default {
     }
   }
   #golbal-wrapper {
+    padding-bottom: 80px;
     #golbal-title {
       font-size: 20px;
       font-weight: bold;

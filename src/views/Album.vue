@@ -96,7 +96,7 @@
       </div>
     </div>
 
-    <el-backtop target="#album-wrapper"></el-backtop>
+    <el-backtop target="#album-wrapper" :bottom="100"></el-backtop>
   </div>
 </template>
 

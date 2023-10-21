@@ -33,7 +33,7 @@
       <!-- 跳转到页面顶部 -->
       <template>
         <el-backtop
-          target="#route-area"
+          target="#route-area" :bottom="100"
         ><i class="el-icon-caret-top" style="color:red;"></i></el-backtop>
       </template>
       <router-view></router-view>

@@ -14,7 +14,11 @@ const state = {
     account: {},
     // 用户详情
     profile: {},
-    hotSearch:{},
+    hotSearch: {},
+    musicPlayList: [],
+    presentMusic: [],
+    presentLyric:[],
+    isPlay:false
 }
 
 const getters = {

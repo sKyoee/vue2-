@@ -254,6 +254,7 @@ export default {
 <style lang="less" scoped>
 #comment {
   margin-top: 5px;
+  padding-bottom: 50px;
   #add-comment {
     #btn-wrapper {
       position: relative;

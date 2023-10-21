@@ -385,6 +385,7 @@ export default {
   #page-selector {
     display: flex;
     justify-content: center;
+    padding-bottom: 80px;
   }
 }
 </style>

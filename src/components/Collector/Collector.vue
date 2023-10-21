@@ -105,6 +105,7 @@ export default {
 
 <style lang="less" scoped>
 #collector-wrapper {
+  margin-bottom: 50px;
   ul {
     width: 100%;
     display: flex;

@@ -6,6 +6,7 @@
       empty-text="当前没有音乐哦"
       size="mini"
       tooltip-effect="light"
+      @row-dblclick="playMusic"
     >
       <el-table-column width="50">
         <template slot-scope="item">
@@ -43,9 +44,13 @@
         show-overflow-tooltip
       >
         <template slot-scope="item">
-          <span id="artists" v-for="a in item.row.ar" :key="a.name" @click="toArtistDetail(a.id)">{{
-            a.name
-          }}</span>
+          <span
+            id="artists"
+            v-for="a in item.row.ar"
+            :key="a.name"
+            @click="toArtistDetail(a.id)"
+            >{{ a.name }}</span
+          >
         </template>
       </el-table-column>
 
@@ -56,12 +61,14 @@
         show-overflow-tooltip
       >
         <template slot-scope="item">
-          <span id="albums" @click="toAlbum(item.row.al.id)">{{ item.row.al.name }}</span>
+          <span id="albums" @click="toAlbum(item.row.al.id)">{{
+            item.row.al.name
+          }}</span>
         </template>
       </el-table-column>
       <el-table-column label="时长" width="180">
         <template slot-scope="item">
-          <div style="color: #909399;user-select:none">
+          <div style="color: #909399; user-select: none">
             {{ item.row.dt | dtFormat }}
           </div>
         </template>
@@ -78,6 +85,7 @@ export default {
       musicList: [],
       backup: [],
       isLoading: false,
+      musicPlayList: [],
     };
   },
   props: {
@@ -87,17 +95,17 @@ export default {
     searchSong: {
       type: String,
     },
-    songs:{
-      type:Array
-    }
+    songs: {
+      type: Array,
+    },
   },
   methods: {
     // 获取歌单所有歌曲
     async getAllMusic() {
       this.isLoading = true;
-      if(!this.trackIds){
-        this.musicList = this.songs
-        return this.isLoading = false
+      if (!this.trackIds) {
+        this.musicList = Object.freeze(this.songs);
+        return (this.isLoading = false);
       }
       let idArr = [];
       this.trackIds.forEach((item, index) => {
@@ -113,25 +121,66 @@ export default {
       });
       if (res.data.code !== 200) return;
       // console.log(res);
-      this.musicList = res.data.songs;
-      this.backup = Object.freeze(res.data.songs)
+      this.musicList = Object.freeze(res.data.songs);
+      this.backup = Object.freeze(res.data.songs);
       this.isLoading = false;
     },
     // 跳转到专辑
-    toAlbum(id){
-      this.$router.push(`/album/${id}`)
+    toAlbum(id) {
+      this.$router.push(`/album/${id}`);
     },
     // 跳转到歌手页面
-    toArtistDetail(id){
-      this.$router.push(`/artistdetail/${id}`)
-    }
+    toArtistDetail(id) {
+      this.$router.push(`/artistdetail/${id}`);
+    },
+    // 获取音乐url
+    getMusicUrl(arr) {
+      arr.forEach((item) => {
+        let musicUrl = `https://music.163.com/song/media/outer/url?id=${item.id}.mp3`;
+        let artistName = item.ar[0].name;
+        let artistId = item.ar[0].id;
+        let musicId = item.id;
+        let musicName = item.name;
+        let musicPic = item.al.picUrl;
+        this.musicPlayList.push({
+          musicId,
+          musicUrl,
+          artistId,
+          artistName,
+          musicName,
+          musicPic,
+        });
+      });
+      this.$store.commit("setmusicPlayList", this.musicPlayList);
+    },
+    // 双击播放歌曲
+    playMusic(row) {
+      console.log(row);
+      let musicUrl = `https://music.163.com/song/media/outer/url?id=${row.id}.mp3`;
+      let artistName = row.ar[0].name;
+      let artistId = row.ar[0].id;
+      let musicId = row.id;
+      let musicName = row.name;
+      let musicPic = row.al.picUrl;
+      this.$store.commit("setpresentMusic", {
+        musicId,
+        musicUrl,
+        artistId,
+        artistName,
+        musicName,
+        musicPic,
+      });
+      this.$store.dispatch('getLyric',musicId)
+      this.$store.commit("setisPlay", true);
+      this.getMusicUrl(this.musicList);
+    },
   },
   watch: {
     // 搜索歌曲
     searchSong(newValue) {
       if (!newValue) {
         this.musicList = this.backup;
-        return
+        return;
       }
       console.log("searchSong改变了", newValue);
       let arr = [];
@@ -171,6 +220,7 @@ export default {
 <style lang="less" scoped>
 #music-list {
   width: 100%;
+  padding-bottom: 80px;
   ::v-deep .el-table {
     font-size: 12px;
     thead {

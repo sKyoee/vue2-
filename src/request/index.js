@@ -2,14 +2,22 @@ import axios from "axios";
 
 axios.default.timeout = 2500
 
-export const get = (url, params = {}) => {
+const get = (url, params = {}) => {
     return axios.get(url, { params })
         .then(res => res.data)
         .catch(err => {
             console.log(err)
         })
 }
+const post = (url, params = {}) => {
+    return axios.post(url, { params })
+        .then(res => res.data)
+        .catch(err => {
+            console.log(err)
+        })
+}
 
+export { get, post }
 /* // 添加请求拦截器
 axios.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么
